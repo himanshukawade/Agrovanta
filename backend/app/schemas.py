@@ -15,8 +15,10 @@ class ResidueInput(BaseModel):
   product_type: ProductType = Field(..., description="Output product, e.g. milk or meat")
   compound: str = Field(..., description="Active compound name, e.g. Oxytetracycline")
   dosage_mg: float = Field(..., gt=0, description="Approximate administered dose in mg")
-  withdrawal_days: int = Field(..., ge=0, description="Labeled withdrawal period in days")
-  days_since_last_dose: int = Field(..., ge=0, description="Days elapsed since the last dose")
+  weight_kg: float = Field(..., gt=0, description="Weight of the animal in kg")
+  age_months: int = Field(..., ge=0, description="Age of the animal in months")
+  treatment_date: str = Field(..., description="Date of the last treatment in YYYY-MM-DD")
+  frequency: str = Field(..., description="Frequency of the dose administered")
 
   @field_validator("species", "compound")
   @classmethod
@@ -32,11 +34,21 @@ class ResiduePrediction(BaseModel):
   compliant: bool
   message: str
   safe_harvest_date_status: WithdrawalStatus
+  withdrawal_days: int = Field(..., description="Auto-looked-up withdrawal period in days")
 
 
 class PredictionResponse(BaseModel):
   input: ResidueInput
   prediction: ResiduePrediction
+
+
+class ModelMetricsResponse(BaseModel):
+  accuracy: float
+  precision: float
+  recall: float
+  f1_score: float
+  sample_count: int
+  confusion_matrix: dict[str, int]
 
 
 class SelfTestResponse(BaseModel):

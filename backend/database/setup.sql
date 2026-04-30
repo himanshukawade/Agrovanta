@@ -34,7 +34,9 @@ CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
-    role user_role NOT NULL,
+    phone VARCHAR(20),
+    hashed_password VARCHAR(255) NOT NULL,
+    role user_role NOT NULL DEFAULT 'FARMER',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
     
     CONSTRAINT chk_users_email_format CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
@@ -150,10 +152,10 @@ CREATE INDEX IF NOT EXISTS idx_mrl_compound_species ON mrl_limits(compound, spec
 -- ============================================================================
 
 -- Insert users (admin, farmer, vet)
-INSERT INTO users (id, name, email, role) VALUES
-    ('a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'System Administrator', 'admin@agrovanta.com', 'ADMIN'),
-    ('b2c3d4e5-f6a7-8901-bcde-f12345678901', 'John Smith', 'john.smith@farmmail.com', 'FARMER'),
-    ('c3d4e5f6-a7b8-9012-cdef-123456789012', 'Dr. Sarah Johnson', 'sarah.johnson@vetclinic.com', 'VET')
+INSERT INTO users (id, name, email, role, hashed_password) VALUES
+    ('a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'System Administrator', 'admin@agrovanta.com', 'ADMIN', '$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjIQqiRQYq'),
+    ('b2c3d4e5-f6a7-8901-bcde-f12345678901', 'John Smith', 'john.smith@farmmail.com', 'FARMER', '$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjIQqiRQYq'),
+    ('c3d4e5f6-a7b8-9012-cdef-123456789012', 'Dr. Sarah Johnson', 'sarah.johnson@vetclinic.com', 'VET', '$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjIQqiRQYq')
 ON CONFLICT (email) DO NOTHING;
 
 -- Insert MRL limits for cattle (Oxytetracycline, Enrofloxacin, Penicillin)

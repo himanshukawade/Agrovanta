@@ -1,13 +1,24 @@
 import os
-from motor.motor_asyncio import AsyncIOMotorClient
+import asyncpg
 from dotenv import load_dotenv
 
 load_dotenv()
 
-MONGODB_URI = os.getenv("MONGODB_URI")
-if not MONGODB_URI:
-    raise ValueError("MONGODB_URI environment variable must be set")
+# We'll set this from environment variable or default to local credentials
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:Admin@localhost:5432/livestock_monitoring_db")
 
-client = AsyncIOMotorClient(MONGODB_URI)
-database = client.agrovanta
-users_collection = database.get_collection("users")
+pool: asyncpg.Pool = None
+
+async def init_db_pool():
+    global pool
+    pool = await asyncpg.create_pool(DATABASE_URL)
+
+async def close_db_pool():
+    global pool
+    if pool is not None:
+        await pool.close()
+
+def get_pool() -> asyncpg.Pool:
+    if pool is None:
+        raise RuntimeError("Database pool has not been initialized.")
+    return pool

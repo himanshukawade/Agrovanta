@@ -13,7 +13,10 @@ from .schemas import (
   ResidueInput,
   ResiduePrediction,
   SelfTestResponse,
+  ModelMetricsResponse,
 )
+from .db import init_db_pool, close_db_pool
+from .ai.metrics import calculate_model_metrics, print_metrics_table
 
 app = FastAPI(
   title="Agrovanta Backend",
@@ -44,14 +47,34 @@ app.add_middleware(
 )
 app.include_router(auth_router.router, prefix="/api")
 
+@app.on_event("startup")
+async def startup_event():
+  await init_db_pool()
+  # Print the model accuracy table to terminal on boot
+  metrics = calculate_model_metrics()
+  print_metrics_table(metrics)
 
-@app.get("/health", tags=["system"])
+@app.on_event("shutdown")
+async def shutdown_event():
+  await close_db_pool()
+
+
+@app.get("/api/health", tags=["system"])
 def health() -> dict[str, str]:
   return {"status": "ok"}
 
 
+@app.get(
+  "/api/model-metrics",
+  response_model=ModelMetricsResponse,
+  tags=["system"],
+)
+def get_model_metrics() -> ModelMetricsResponse:
+  return ModelMetricsResponse(**calculate_model_metrics())
+
+
 @app.post(
-  "/predict-residue",
+  "/api/predict-residue",
   response_model=PredictionResponse,
   tags=["residue"],
 )
@@ -62,8 +85,10 @@ def predict_residue(input_data: ResidueInput) -> PredictionResponse:
       product_type=input_data.product_type,
       compound=input_data.compound,
       dosage_mg=input_data.dosage_mg,
-      withdrawal_days=input_data.withdrawal_days,
-      days_since_last_dose=input_data.days_since_last_dose,
+      weight_kg=input_data.weight_kg,
+      age_months=input_data.age_months,
+      treatment_date=input_data.treatment_date,
+      frequency=input_data.frequency,
     )
 
     return PredictionResponse(
@@ -74,6 +99,7 @@ def predict_residue(input_data: ResidueInput) -> PredictionResponse:
         compliant=prediction.compliant,
         message=prediction.message,
         safe_harvest_date_status=prediction.safe_harvest_date_status,
+        withdrawal_days=prediction.withdrawal_days,
       ),
     )
   except ValueError as exc:
@@ -86,7 +112,7 @@ def predict_residue(input_data: ResidueInput) -> PredictionResponse:
 
 
 @app.get(
-  "/self-test",
+  "/api/self-test",
   response_model=SelfTestResponse,
   tags=["system"],
 )
@@ -100,7 +126,10 @@ def self_test() -> SelfTestResponse:
     compound="Oxytetracycline",
     dosage_mg=500,
     withdrawal_days=7,
-    days_since_last_dose=3,
+    weight_kg=500.0,
+    age_months=24,
+    treatment_date="2024-03-01",
+    frequency="daily",
   )
 
   sanity_check = example_prediction.safe_harvest_date_status == "IN_WITHDRAWAL"
@@ -115,6 +144,7 @@ def self_test() -> SelfTestResponse:
       compliant=example_prediction.compliant,
       message=example_prediction.message,
       safe_harvest_date_status=example_prediction.safe_harvest_date_status,
+      withdrawal_days=example_prediction.withdrawal_days,
     ),
   )
 
