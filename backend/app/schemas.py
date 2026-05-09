@@ -57,3 +57,57 @@ class SelfTestResponse(BaseModel):
   sanity_check: bool
   example_prediction: ResiduePrediction
 
+from datetime import date, datetime
+from uuid import UUID
+from typing import Optional, List
+
+class FarmBase(BaseModel):
+  name: str = Field(..., description="Name of the farm")
+  location: str = Field(..., description="Location of the farm")
+
+class FarmCreate(FarmBase):
+  pass
+
+class Farm(FarmBase):
+  id: UUID
+  owner_id: UUID
+  created_at: datetime
+  
+  class Config:
+    from_attributes = True
+
+class AnimalBase(BaseModel):
+  species: str
+  age: Optional[int] = None
+  weight: Optional[float] = None
+  tag_number: str
+
+class AnimalCreate(AnimalBase):
+  farm_id: UUID
+
+class Animal(AnimalBase):
+  id: UUID
+  farm_id: UUID
+  created_at: datetime
+
+  class Config:
+    from_attributes = True
+
+class TreatmentBase(BaseModel):
+  drug_name: str
+  compound: str
+  dosage_mg: float
+  start_date: date
+  end_date: Optional[date] = None
+
+class TreatmentCreate(TreatmentBase):
+  animal_id: UUID
+
+class Treatment(TreatmentBase):
+  id: UUID
+  animal_id: UUID
+  created_by: UUID
+  created_at: datetime
+
+  class Config:
+    from_attributes = True

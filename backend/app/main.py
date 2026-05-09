@@ -8,6 +8,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from .ai.dataset import load_residue_dataset
 from .ai.model import predict_residue_risk
 from .routers import auth as auth_router
+from .routers import farms as farms_router
+from .routers import livestock as livestock_router
 from .schemas import (
   PredictionResponse,
   ResidueInput,
@@ -46,6 +48,8 @@ app.add_middleware(
   allow_headers=["*"],
 )
 app.include_router(auth_router.router, prefix="/api")
+app.include_router(farms_router.router, prefix="/api")
+app.include_router(livestock_router.router, prefix="/api")
 
 @app.on_event("startup")
 async def startup_event():

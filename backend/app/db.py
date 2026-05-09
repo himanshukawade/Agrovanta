@@ -41,3 +41,9 @@ class User(Base):
 async def get_db():
     async with AsyncSessionLocal() as session:
         yield session
+
+async def init_db_pool():
+    pass
+
+async def close_db_pool():
+    await engine.dispose()

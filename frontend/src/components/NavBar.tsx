@@ -23,6 +23,11 @@ const NavBar = () => {
   }, [pathname]);
 
   const hideAuthButtons = ["/signin", "/signup"].includes(pathname);
+  const isDashboard = pathname?.startsWith("/dashboard");
+
+  if (isDashboard) {
+    return null;
+  }
 
   const handleSignOut = () => {
     localStorage.removeItem("agrovanta_token");

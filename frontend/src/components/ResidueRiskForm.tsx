@@ -231,7 +231,7 @@ export default function ResidueRiskForm() {
 
     try {
       const endpoint = backendBaseUrl
-        ? `${backendBaseUrl}/predict-residue`
+        ? `${backendBaseUrl}/api/predict-residue`
         : "/api/predict-residue";
 
       const response = await fetch(endpoint, {
