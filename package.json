@@ -2,11 +2,13 @@
   "name": "agrovanta",
   "version": "0.1.0",
   "private": true,
-  "scripts":
-  {
+  "scripts": {
     "frontend": "cd frontend && npm run dev",
     "backend": "cd backend && .venv\\Scripts\\python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
     "dev": "concurrently -k \"npm run backend\" \"npm run frontend\"",
     "build": "cd frontend && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }

@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:14-alpine
+    container_name: agrovanta-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Admin-14
+      POSTGRES_DB: livestock_monitoring_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+      - ./backend/database/setup.sql:/docker-entrypoint-initdb.d/setup.sql
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
